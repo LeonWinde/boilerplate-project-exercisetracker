@@ -101,10 +101,15 @@ app.get("/api/users", async (req, res) => {
 });
 
 app.get("/api/users/:_id/logs", async (req, res) => {
-  console.log(req.query);
   const {_id } = req.params;
+  const { from, to, limit } = req.query;
 
-  const logs = await Exercise.find({ userid: _id });
+  let logs = await Exercise.find({ userid: _id }).where(
+    "date",
+    from ? { $gte: new Date(from) } : undefined,
+    to ? { $lte: new Date(to) } : undefined
+  ).limit(limit ? parseInt(limit) : undefined).exec();
+  
   const user = await User.findById(_id);
   if (!user) {
     return res.status(404).send("User not found");
